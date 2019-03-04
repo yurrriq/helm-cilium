@@ -1,0 +1,35 @@
+# Default values for cilium
+
+nameOverride: ""
+fullnameOverride: cilium
+
+image:
+  registry: docker.io
+  repository: cilium/cilium
+  tag: 1.4.1
+  pullPolicy: IfNotPresent
+
+
+init_image:
+  registry: docker.io
+  repository: cilium/cilium-init
+  tag: 2018-10-16
+  pullPolicy: IfNotPresent
+
+
+runtime: docker
+
+
+rbac:
+  # If true, create & use RBAC resources
+  create: true
+  # If true, create and use PodSecurityPolicy
+  pspEnable: true
+
+
+operator: false
+
+etcd:
+  operator: true
+
+
