@@ -1,9 +1,9 @@
 {{/* vim: set filetype=mustache: */}}
-{{- if .Values.rbac.create -}}
+{{- if .Values.rbac.create  and .Values.etcd.operator.create -}}
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRole
 metadata:
-  name: cilium-etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
 rules:
 - apiGroups:
   - etcd.database.coreos.com
@@ -74,14 +74,14 @@ rules:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
 metadata:
-  name: cilium-etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cilium-etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
 subjects:
 - kind: ServiceAccount
-  name: cilium-etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
   namespace: {{ .Release.Namespace }}
 ---
 apiVersion: {{ rbac.apiVersion }}
@@ -140,13 +140,13 @@ rules:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
 metadata:
-  name: etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
 subjects:
 - kind: ServiceAccount
-  name: cilium-etcd-sa
+  name: {{ template "cilium.fullname" . }}-etcd-sa
   namespace: {{ .Release.Namespace }}
 {{- end -}}

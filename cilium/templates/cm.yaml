@@ -1,45 +1,39 @@
-# Default values for cilium
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cilium-metrics-config
+  namespace: kube-system
+data:
+  # Allow prometheus to scrape on this addr:port. Not specifying an address
+  # will bind to all available interfaces in the container.
+  # Note that this only enables the HTTP server. prometheus must be separately
+  # configured. If you wish to turn this off, set this variable to be empty.
+  prometheus-serve-addr: ":9090"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-config
+  namespace: kube-system
+data:
+  # This etcd-config contains the etcd endpoints of your cluster. If you use
+  # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config
+  etcd-config: |-
+               ---
+               endpoints:
+                 - https://cilium-etcd-client.kube-system.svc:2379
+               #
+               # In case you want to use TLS in etcd, uncomment the 'ca-file' line
+               # and create a kubernetes secret by following the tutorial in
+               # https://cilium.link/etcd-config
+               ca-file: '/var/lib/etcd-secrets/etcd-client-ca.crt'
+               #
+               # In case you want client to server authentication, uncomment the following
+               # lines and create a kubernetes secret by following the tutorial in
+               # https://cilium.link/etcd-config
+               key-file: '/var/lib/etcd-secrets/etcd-client.key'
+               cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
 
-nameOverride: ""
-fullnameOverride: cilium
-
-domain_kube: cluster.local  # Cluster DNS domain
-
-image:
-  registry: docker.io
-  repository: cilium/cilium
-  tag: 1.4.1
-  pullPolicy: IfNotPresent
-
-
-init_image:
-  registry: docker.io
-  repository: cilium/cilium-init
-  tag: 2018-10-16
-  pullPolicy: IfNotPresent
-
-
-runtime: docker  # container runtime, docker|containerd|crio
-
-rbac:
-  create: true  # If true, create & use RBAC resources
-
-psp:
-  create: true  # If true, create and use PodSecurityPolicy
-
-
-operator:
-  create: false
-  image:
-
-
-etcd:
-  operator:
-    create: true
-    image:
-
-
-config:
   # If you want to run cilium in debug mode change this value to true
   debug: "false"
 

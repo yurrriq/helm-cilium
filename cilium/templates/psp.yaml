@@ -1,0 +1,58 @@
+{{/* vim: set filetype=mustache: */}}
+{{- if .Values.psp.create -}}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: cilium
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - NET_ADMIN
+  - SYS_RESOURCE
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: RunAsAny  # TODO: should be mustrunas as soon as we can fix it
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+# tries to write to /root/.config...
+#  readOnlyRootFilesystem: true
+
+---
+kind: ClusterRole
+apiVersion: {{ rbac.apiVersion }}
+metadata:
+  name: psp:{{ template "cilium.fullname" . }}
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - cilium
+---
+apiVersion: {{ rbac.apiVersion }}
+kind: ClusterRoleBinding
+metadata:
+  name: psp:{{ template "cilium.fullname" . }}
+roleRef:
+  apiGroup: {{ rbac.apiVersion }}
+  kind: ClusterRole
+  name: psp:{{ template "cilium.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: cilium
+  namespace: kube-system
+{{- end -}}
