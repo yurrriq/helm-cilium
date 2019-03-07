@@ -13,16 +13,20 @@ data:
   # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config
   etcd-config: |-
     endpoints:
-    - https://cilium-etcd-client.kube-system.svc:2379
+  {{- if .Values.etcd.endpoints -}}
+    {{ toYaml .Values.etcd.endpoints | indent 4 }}
+  {{- else -}}
+   - https://{{ template "cilium.fullname" . }}-etcd-client.{{ .Release.Namespace }}.svc:2379
+  {{- end -}}
     #
     # In case you want to use TLS in etcd, uncomment the 'ca-file' line
     # and create a kubernetes secret by following the tutorial in
     # https://cilium.link/etcd-config
-    ca-file: '/var/lib/etcd-secrets/etcd-client-ca.crt'
+    ca-file: '/etc/pki/etcd/etcd-client-ca.crt'
     #
     # In case you want client to server authentication, uncomment the following
     # lines and create a kubernetes secret by following the tutorial in
     # https://cilium.link/etcd-config
-    key-file: '/var/lib/etcd-secrets/etcd-client.key'
-    cert-file: '/var/lib/etcd-secrets/etcd-client.crt'
-{{ toYaml .Values.config | indent 4 }}
+    key-file: '/etc/pki/etcd/etcd-client.key'
+    cert-file: '/etc/pki/etcd/etcd-client.crt'
+{{ toYaml .Values.config | indent 2 }}

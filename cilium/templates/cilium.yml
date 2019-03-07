@@ -1,4 +1,4 @@
-apiVersion: {{ apps.apiVersion }}
+apiVersion: {{ include "apps.apiVersion" . }}
 kind: DaemonSet
 metadata:
   labels:
@@ -20,10 +20,10 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/cm.yaml") . | sha256sum }}
-    {{- if .Values.config['prometheus-serve-addr'] -}}
-        prometheus.io/port: "9090"
+    {{- if hasKey .Values.config "prometheus-serve-addr" }}
+        prometheus.io/port: {{ index .Values.config "prometheus-serve-addr" |split ":"|last  }}
         prometheus.io/scrape: "true"
-    {{- end -}}
+    {{- end }}
         # This annotation plus the CriticalAddonsOnly toleration makes
         # cilium to be a critical pod in the cluster, which ensures cilium
         # gets priority scheduling.
@@ -145,13 +145,13 @@ spec:
         - mountPath: /etc/cilium
           name: cilium-config
           readOnly: true
-      {{- if .Values.runtime == 'docker' }}
+      {{- if eq .Values.runtime "docker" }}
         - mountPath: /var/run/docker.sock
           name: docker-socket
-      {{- elif .Values.runtime == 'containerd' }}
+      {{- else if eq .Values.runtime "containerd" }}
         - mountPath: /var/run/containerd/containerd.sock
           name: containerd-socket
-      {{- elif .Values.runtime == 'crio' }}
+      {{- else if eq .Values.runtime "crio" }}
         - mountPath: /var/run/crio/crio.sock
           name: crio-socket
       {{- end }}
@@ -188,11 +188,11 @@ spec:
         - mountPath: /var/run/cilium
           name: cilium-run
       restartPolicy: Always
-    {{- if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion -}}
+    {{- if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion }}
       serviceAccount: {{ template "cilium.fullname" . }}
-    {{- else -}}
+    {{- else }}
       serviceAccountName: {{ template "cilium.fullname" . }}
-    {{- end -}}
+    {{- end }}
       terminationGracePeriodSeconds: 1
       tolerations:
       - operator: Exists
@@ -247,25 +247,25 @@ spec:
           defaultMode: 420
           optional: true
           secretName: cilium-clustermesh
-    {{- if .Values.runtime == 'docker' }}
+    {{- if eq .Values.runtime "docker" -}}
         # To read docker events from the node
       - hostPath:
           path: /var/run/docker.sock
           type: Socket
         name: docker-socket
-    {{- elif .Values.runtime == 'containerd' }}
+    {{- else if eq .Values.runtime "containerd" -}}
         # To read labels from containerD containers running in the host
       - hostPath:
           path: /var/run/containerd/containerd.sock
           type: Socket
         name: containerd-socket
-    {{- elif .Values.runtime == 'crio' }}
+    {{- else if eq .Values.runtime "crio" -}}
         # To read labels from CRI-O containers running in the host
       - hostPath:
           path: /var/run/crio/crio.sock
           type: Socket
         name: crio-socket
-    {{- end }}
+    {{- end -}}
 
   updateStrategy:
     rollingUpdate:

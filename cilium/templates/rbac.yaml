@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
 {{- if .Values.rbac.create -}}
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: cilium
   name: {{ template "cilium.fullname" . }}
 roleRef:
-  apiGroup: {{ rbac.apiVersion }}
+  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ template "cilium.fullname" . }}
 subjects:
@@ -22,7 +22,7 @@ subjects:
   kind: Group
   name: system:nodes
 ---
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
   labels:

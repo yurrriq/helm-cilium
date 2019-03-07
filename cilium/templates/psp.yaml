@@ -39,7 +39,7 @@ spec:
 
 ---
 kind: ClusterRole
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 metadata:
   labels:
     app.kubernetes.io/name: {{ include "cilium.name" . }}
@@ -55,7 +55,7 @@ rules:
   resourceNames:
   - cilium
 ---
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -66,7 +66,7 @@ metadata:
     app.kubernetes.io/component: agent
   name: psp:{{ template "cilium.fullname" . }}
 roleRef:
-  apiGroup: {{ rbac.apiVersion }}
+  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: psp:{{ template "cilium.fullname" . }}
 subjects:

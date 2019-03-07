@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
-{{- if .Values.rbac.create and .Values.operator.create -}}
-apiVersion: {{ rbac.apiVersion }}
+{{- if and .Values.rbac.create .Values.operator.create -}}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
   labels:
@@ -38,7 +38,7 @@ rules:
   verbs:
   - '*'
 ---
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
   labels:

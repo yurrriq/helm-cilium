@@ -4,7 +4,7 @@ nameOverride: ""
 fullnameOverride: cilium
 
 dns:
-  domain: cluster.local        # Cluster DNS domain
+  domain: ppicard.local        # Cluster DNS domain
   policy: ClusterFirstWithHostNet
 
 image:
@@ -35,7 +35,7 @@ psp:
   create: true  # If true, create and use PodSecurityPolicy
 
 operator:
-  create: false
+  create: true
   #image:
 
 
@@ -43,7 +43,7 @@ etcd:
   #endpoints:     # unused with operator
   #- http://EDIT-ME-ETCD-ADDRESS:2379
   operator:
-    create: false
+    create: true
 
     #image:
 

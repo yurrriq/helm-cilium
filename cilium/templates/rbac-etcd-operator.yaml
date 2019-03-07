@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
-{{- if .Values.rbac.create and .Values.etcd.operator.create -}}
-apiVersion: {{ rbac.apiVersion }}
+{{- if and .Values.rbac.create .Values.etcd.operator.create -}}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
   labels:
@@ -77,7 +77,7 @@ rules:
   - create
   - delete
 ---
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -96,7 +96,7 @@ subjects:
   name: {{ template "cilium.fullname" . }}-etcd-operator
   namespace: {{ .Release.Namespace }}
 ---
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
   labels:
@@ -155,7 +155,7 @@ rules:
   verbs:
   - get
 ---
-apiVersion: {{ rbac.apiVersion }}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
   labels:
