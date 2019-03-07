@@ -2,7 +2,14 @@
 {{- if .Values.rbac.create -}}
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
-{{- template "cilium.metadata" . -}}
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: cilium
+  name: {{ template "cilium.fullname" . }}
 roleRef:
   apiGroup: {{ rbac.apiVersion }}
   kind: ClusterRole
@@ -17,7 +24,14 @@ subjects:
 ---
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRole
-{{- template "cilium.metadata" . -}}
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: cilium
+  name: {{ template "cilium.fullname" . }}
 rules:
 - apiGroups:
   - networking.k8s.io

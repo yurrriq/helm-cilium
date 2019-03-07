@@ -3,7 +3,13 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: cilium
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: agent
+  name: {{ template "cilium.fullname" . }}
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
 spec:
@@ -35,6 +41,12 @@ spec:
 kind: ClusterRole
 apiVersion: {{ rbac.apiVersion }}
 metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: agent
   name: psp:{{ template "cilium.fullname" . }}
 rules:
 - apiGroups: ['policy']
@@ -46,6 +58,12 @@ rules:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: agent
   name: psp:{{ template "cilium.fullname" . }}
 roleRef:
   apiGroup: {{ rbac.apiVersion }}
@@ -53,6 +71,6 @@ roleRef:
   name: psp:{{ template "cilium.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: cilium
-  namespace: kube-system
+  name: {{ template "cilium.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 {{- end -}}

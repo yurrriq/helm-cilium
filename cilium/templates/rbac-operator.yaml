@@ -3,7 +3,13 @@
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRole
 metadata:
-  name: cilium-operator
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: operator
+  name: {{ template "cilium.fullname" . }}-operator
 rules:
 - apiGroups:
   - ""
@@ -35,13 +41,19 @@ rules:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
 metadata:
-  name: cilium-operator
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: operator
+  name: {{ template "cilium.fullname" . }}-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cilium-operator
+  name: {{ template "cilium.fullname" . }}-operator
 subjects:
 - kind: ServiceAccount
-  name: cilium-operator
+  name: {{ template "cilium.fullname" . }}-operator
   namespace: {{ .Release.Namespace }}
 {{- end -}}

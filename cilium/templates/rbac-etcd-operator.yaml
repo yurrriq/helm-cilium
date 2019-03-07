@@ -1,8 +1,14 @@
 {{/* vim: set filetype=mustache: */}}
-{{- if .Values.rbac.create  and .Values.etcd.operator.create -}}
+{{- if .Values.rbac.create and .Values.etcd.operator.create -}}
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRole
 metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
   name: {{ template "cilium.fullname" . }}-etcd-operator
 rules:
 - apiGroups:
@@ -74,6 +80,12 @@ rules:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
   name: {{ template "cilium.fullname" . }}-etcd-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -87,7 +99,13 @@ subjects:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRole
 metadata:
-  name: etcd-operator
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
 rules:
 - apiGroups:
   - etcd.database.coreos.com
@@ -140,6 +158,12 @@ rules:
 apiVersion: {{ rbac.apiVersion }}
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
   name: {{ template "cilium.fullname" . }}-etcd-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
