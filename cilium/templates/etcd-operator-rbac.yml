@@ -1,0 +1,97 @@
+{{/* vim: set filetype=mustache: */}}
+{{- if and .Values.rbac.create .Values.etcd.operator.create -}}
+apiVersion: {{ include "rbac.apiVersion" . }}
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: cilium:{{ template "cilium.fullname" . }}-etcd-operator
+rules:
+- apiGroups:
+  - etcd.database.coreos.com
+  resources:
+  - etcdclusters
+  verbs:
+  - get
+  - delete
+  - create
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - delete
+  - get
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - deployments
+  verbs:
+  - delete
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+  - delete
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - delete
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - componentstatuses
+  verbs:
+  - get
+- apiGroups:
+  - extensions
+  resources:
+  - deployments
+  verbs:
+  - delete
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - create
+  - delete
+---
+apiVersion: {{ include "rbac.apiVersion" . }}
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: cilium:{{ template "cilium.fullname" . }}-etcd-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cilium:{{ template "cilium.fullname" . }}-etcd-operator
+subjects:
+- kind: ServiceAccount
+  name: {{ template "cilium.fullname" . }}-etcd-operator
+  namespace: {{ .Release.Namespace }}

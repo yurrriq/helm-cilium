@@ -1,0 +1,74 @@
+{{/* vim: set filetype=mustache: */}}
+{{- if .Values.psp.create -}}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: cilium:{{ template "cilium.fullname" . }}-etcd-operator
+#  annotations:
+#    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+#  allowedCapabilities:
+#  - NET_ADMIN
+#  - SYS_RESOURCE
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny  # TODO: should be mustrunas as soon as we can fix it
+  supplementalGroups:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  readOnlyRootFilesystem: true
+---
+kind: ClusterRole
+apiVersion: {{ include "rbac.apiVersion" . }}
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: psp:cilium:{{ template "cilium.fullname" . }}-etcd-operator
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - cilium:{{ template "cilium.fullname" . }}-etcd-operator
+---
+apiVersion: {{ include "rbac.apiVersion" . }}
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: psp:cilium:{{ template "cilium.fullname" . }}-etcd-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: psp:cilium:{{ template "cilium.fullname" . }}-etcd-operator
+subjects:
+- kind: ServiceAccount
+  name: {{ template "cilium.fullname" . }}-etcd-operator
+  namespace: {{ .Release.Namespace }}
+{{- end -}}

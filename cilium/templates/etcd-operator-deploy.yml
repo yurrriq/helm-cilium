@@ -1,0 +1,68 @@
+apiVersion: {{ include "apps.apiVersion" . }}
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: etcd-operator
+  name: {{ template "cilium.fullname" . }}-etcd-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: etcd-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "cilium.name" . }}
+        helm.sh/chart: {{ include "cilium.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: etcd-operator
+    spec:
+      containers:
+      - command:
+        - /usr/bin/cilium-etcd-operator
+        env:
+        - name: CILIUM_ETCD_OPERATOR_CLUSTER_DOMAIN
+          value: "{{ .Values.dns.domain }}"
+        - name: CILIUM_ETCD_OPERATOR_ETCD_CLUSTER_SIZE
+          value: "{{ .Values.etcd.operator.cluster_size }}"
+        - name: CILIUM_ETCD_OPERATOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: CILIUM_ETCD_OPERATOR_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: CILIUM_ETCD_OPERATOR_POD_UID
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.uid
+        image: "{{ .Values.etcd.operator.image.repository }}:{{ .Values.etcd.operator.image.tag }}"
+        imagePullPolicy: {{ .Values.etcd.operator.image.pullPolicy }}
+        name: cilium-etcd-operator
+      dnsPolicy: {{ .Values.etcd.operator.dnsPolicy }}
+      hostNetwork: true
+      restartPolicy: Always
+    {{- if semverCompare "<= 1.8-0" .Capabilities.KubeVersion.GitVersion }}
+      serviceAccount: {{ template "cilium.fullname" . }}-etcd-operator
+    {{- else }}
+      serviceAccountName: {{ template "cilium.fullname" . }}-etcd-operator
+    {{- end }}
+    {{- with .Values.agent.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end -}}

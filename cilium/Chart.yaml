@@ -1,6 +1,6 @@
 name: cilium
 home: https://cilium.io/
-version: 0.0.1
+version: 0.4.0
 appVersion: 1.4.1
 description:
   Powered by the BPF kernel microcode system, Cilium is an awesome API-aware Networking and Security
@@ -11,4 +11,3 @@ sources:
 maintainers:
 - name: Ronald van Zantvoort
   email: the.loeki@gmail.com
-

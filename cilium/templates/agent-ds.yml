@@ -1,3 +1,4 @@
+{{- $prometheus_port := index .Values.agent.config "prometheus-serve-addr"|splitList ":"|last -}}
 apiVersion: {{ include "apps.apiVersion" . }}
 kind: DaemonSet
 metadata:
@@ -12,31 +13,32 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "cilium.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/component: agent
-      kubernetes.io/cluster-service: "true"
   template:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/cm.yaml") . | sha256sum }}
-    {{- if hasKey .Values.config "prometheus-serve-addr" }}
-        prometheus.io/port: {{ index .Values.config "prometheus-serve-addr" |split ":"|last  }}
+      {{- if hasKey .Values.agent.config "prometheus-serve-addr" }}
+        prometheus.io/port: {{ $prometheus_port }}
         prometheus.io/scrape: "true"
-    {{- end }}
-        # This annotation plus the CriticalAddonsOnly toleration makes
-        # cilium to be a critical pod in the cluster, which ensures cilium
-        # gets priority scheduling.
-        # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
-        scheduler.alpha.kubernetes.io/critical-pod: ""
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated","operator":"Equal","value":"master","effect":"NoSchedule"}]'
+      {{- end }}
+      {{- if semverCompare "< 1.11-0" .Capabilities.KubeVersion.GitVersion }}
+        scheduler.alpha.kubernetes.io/critical-pod: ""  # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+      {{- end }}
+      {{- with .Values.agent.annotations }}
+{{ toYaml . | indent 8 }}
+      {{- end -}}
       labels:
         app.kubernetes.io/name: {{ include "cilium.name" . }}
         helm.sh/chart: {{ include "cilium.chart" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: agent
-      kubernetes.io/cluster-service: "true"
+        kubernetes.io/cluster-service: "true"
+      {{- with .Values.agent.labels }}
+{{ toYaml . | indent 8 }}
+      {{- end -}}
     spec:
       containers:
       - args:
@@ -51,9 +53,9 @@ spec:
         command:
         - cilium-agent
         env:
-      {{- with .Values.env }}
-        {{ toYaml . | indent 10 }}
-      {{- end }}
+      {{- with .Values.agent.env }}
+{{ toYaml . | indent 8 }}
+      {{- end -}}
         - name: K8S_NODE_NAME
           valueFrom:
             fieldRef:
@@ -103,11 +105,13 @@ spec:
           successThreshold: 1
           timeoutSeconds: 1
         name: cilium-agent
+      {{- if hasKey .Values.agent.config "prometheus-serve-addr" }}
         ports:
-        - containerPort: 9090
-          hostPort: 9090
+        - containerPort: {{ $prometheus_port }}
+          hostPort: {{ $prometheus_port }}
           name: prometheus
           protocol: TCP
+      {{- end }}
         readinessProbe:
           exec:
             command:
@@ -145,17 +149,17 @@ spec:
         - mountPath: /etc/cilium
           name: cilium-config
           readOnly: true
-      {{- if eq .Values.runtime "docker" }}
+      {{- if eq .Values.agent.runtime "docker" }}
         - mountPath: /var/run/docker.sock
           name: docker-socket
-      {{- else if eq .Values.runtime "containerd" }}
+      {{- else if eq .Values.agent.runtime "containerd" }}
         - mountPath: /var/run/containerd/containerd.sock
           name: containerd-socket
-      {{- else if eq .Values.runtime "crio" }}
+      {{- else if eq .Values.agent.runtime "crio" }}
         - mountPath: /var/run/crio/crio.sock
           name: crio-socket
       {{- end }}
-      dnsPolicy: {{ .Values.dns.policy }}
+      dnsPolicy: {{ .Values.agent.dnsPolicy }}
       hostNetwork: true
       hostPID: false
       initContainers:
@@ -174,8 +178,8 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.init_image.pullPolicy }}
+        image: "{{ .Values.agent.init_image.repository }}:{{ .Values.agent.init_image.tag }}"
+        imagePullPolicy: {{ .Values.agent.init_image.pullPolicy }}
         name: clean-cilium-state
         securityContext:
           capabilities:
@@ -188,14 +192,19 @@ spec:
         - mountPath: /var/run/cilium
           name: cilium-run
       restartPolicy: Always
-    {{- if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion }}
+    {{- if semverCompare "<= 1.8-0" .Capabilities.KubeVersion.GitVersion }}
       serviceAccount: {{ template "cilium.fullname" . }}
     {{- else }}
       serviceAccountName: {{ template "cilium.fullname" . }}
     {{- end }}
       terminationGracePeriodSeconds: 1
+    {{- if semverCompare "=> 1.11-0" .Capabilities.KubeVersion.GitVersion }}
+      priorityClassName: system-node-critical
+    {{- end }}
+    {{- with .Values.agent.tolerations }}
       tolerations:
-      - operator: Exists
+{{ toYaml . | indent 8 }}
+    {{- end -}}
       volumes:
       # To keep state between restarts / upgrades
       - hostPath:
@@ -247,25 +256,25 @@ spec:
           defaultMode: 420
           optional: true
           secretName: cilium-clustermesh
-    {{- if eq .Values.runtime "docker" -}}
+    {{- if eq .Values.agent.runtime "docker" }}
         # To read docker events from the node
       - hostPath:
           path: /var/run/docker.sock
           type: Socket
         name: docker-socket
-    {{- else if eq .Values.runtime "containerd" -}}
+    {{- else if eq .Values.agent.runtime "containerd" }}
         # To read labels from containerD containers running in the host
       - hostPath:
           path: /var/run/containerd/containerd.sock
           type: Socket
         name: containerd-socket
-    {{- else if eq .Values.runtime "crio" -}}
+    {{- else if eq .Values.agent.runtime "crio" }}
         # To read labels from CRI-O containers running in the host
       - hostPath:
           path: /var/run/crio/crio.sock
           type: Socket
         name: crio-socket
-    {{- end -}}
+    {{- end }}
 
   updateStrategy:
     rollingUpdate:

@@ -9,11 +9,11 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: cilium
-  name: {{ template "cilium.fullname" . }}
+  name: cilium:{{ template "cilium.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "cilium.fullname" . }}
+  name: cilium:{{ template "cilium.fullname" . }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "cilium.fullname" . }}
@@ -30,8 +30,8 @@ metadata:
     helm.sh/chart: {{ include "cilium.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: cilium
-  name: {{ template "cilium.fullname" . }}
+    app.kubernetes.io/component: agent
+  name: cilium:{{ template "cilium.fullname" . }}
 rules:
 - apiGroups:
   - networking.k8s.io

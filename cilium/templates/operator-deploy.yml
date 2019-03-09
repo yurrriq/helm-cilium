@@ -113,10 +113,3 @@ spec:
           defaultMode: 420
           optional: true
           secretName: cilium-etcd-secrets
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cilium-operator
-  namespace: kube-system
----

@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: operator
-  name: {{ template "cilium.fullname" . }}-operator
+  name: cilium:{{ template "cilium.fullname" . }}-operator
 rules:
 - apiGroups:
   - ""
@@ -47,11 +47,11 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: operator
-  name: {{ template "cilium.fullname" . }}-operator
+  name: cilium:{{ template "cilium.fullname" . }}-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "cilium.fullname" . }}-operator
+  name: cilium:{{ template "cilium.fullname" . }}-operator
 subjects:
 - kind: ServiceAccount
   name: {{ template "cilium.fullname" . }}-operator
