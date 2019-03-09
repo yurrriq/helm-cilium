@@ -1,18 +1,19 @@
----
-apiVersion: __DEPLOYMENT_API_VERSION__
+apiVersion: {{ include "apps.apiVersion" . }}
 kind: Deployment
 metadata:
   labels:
-    io.cilium/app: operator
-    name: cilium-operator
-  name: cilium-operator
-  namespace: kube-system
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: operator
+  name: {{ template "cilium.fullname" . }}-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.cilium/app: operator
-      name: cilium-operator
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: operator
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -20,15 +21,25 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+    {{- with .Values.operator.annotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+    {{- end -}}
       labels:
-        io.cilium/app: operator
-        name: cilium-operator
+        app.kubernetes.io/name: {{ include "cilium.name" . }}
+        helm.sh/chart: {{ include "cilium.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: operator
+    {{- with .Values.operator.labels }}
+{{ toYaml . | indent 8 }}
+    {{- end -}}
     spec:
       containers:
       - args:
         - --debug=$(CILIUM_DEBUG)
         - --kvstore=etcd
-        - --kvstore-opt=etcd.config=/var/lib/etcd-config/etcd.config
+        - --kvstore-opt=etcd.config=/etc/etcd.yml
         command:
         - cilium-operator
         env:
@@ -84,28 +95,36 @@ spec:
               key: AWS_DEFAULT_REGION
               name: cilium-aws
               optional: true
-        image: docker.io/cilium/operator:__CILIUM_VERSION__
-        imagePullPolicy: Always
+        image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
+        imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
         name: cilium-operator
         volumeMounts:
-        - mountPath: /var/lib/etcd-config
-          name: etcd-config-path
+        - mountPath: /etc/etcd.yml
+          subPath: etcd.yml
+          name: etcd-config
           readOnly: true
-        - mountPath: /var/lib/etcd-secrets
+        - mountPath: /etc/pki/etcd
           name: etcd-secrets
           readOnly: true
-      dnsPolicy: ClusterFirst
+      dnsPolicy: {{ .Values.operator.dnsPolicy }}
       restartPolicy: Always
-      serviceAccount: cilium-operator
-      serviceAccountName: cilium-operator
+    {{- if semverCompare "<= 1.8-0" .Capabilities.KubeVersion.GitVersion }}
+      serviceAccount: {{ template "cilium.fullname" . }}-operator
+    {{- else }}
+      serviceAccountName: {{ template "cilium.fullname" . }}-operator
+    {{- end }}
+    {{- with .Values.agent.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end -}}
       volumes:
       # To read the etcd config stored in config maps
       - configMap:
           defaultMode: 420
           items:
           - key: etcd-config
-            path: etcd.config
-          name: cilium-config
+            path: etcd.yml
+          name: {{ template "cilium.fullname" . }}-config
         name: etcd-config-path
         # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets

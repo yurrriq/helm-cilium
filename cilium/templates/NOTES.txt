@@ -11,7 +11,7 @@ Remmember to inject the etcd-secret
 
 {{- end }}
 
-{{- if .Values.ipsec.enable }}
+{{- if .Values.agent.ipsec.enable }}
 Remmember to inject the ipsec-keys
 
 {{- end }}

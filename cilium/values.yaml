@@ -13,10 +13,18 @@ psp:
   create: true  # If true, create and use PodSecurityPolicy
 
 
-
 operator:
   create: true
-  #image:
+  image:
+    registry: docker.io
+    repository: cilium-operator
+    tag: v1.4.1
+    pullPolicy: IfNotPresent
+  dnsPolicy: ClusterFirstWithHostNet
+  annotations: {}
+  labels: {}
+  tolerations:
+  - operator: Exists
 
 
 etcd:
@@ -46,22 +54,21 @@ agent:
     tag: v1.4.1
     pullPolicy: IfNotPresent
 
-
   init_image:
     registry: docker.io
     repository: cilium/cilium-init
     tag: 2018-10-16
     pullPolicy: IfNotPresent
 
-  # env:           # Additional environment for the DaemonSet
-  # - name: IMATEAPOT
-  #   value: 42
-
   dnsPolicy: ClusterFirstWithHostNet
   annotations: {}
   labels: {}
   tolerations:
   - operator: Exists
+
+  env: {}           # Additional environment for the DaemonSet
+  # - name: IMATEAPOT
+  #   value: 42
 
   runtime: docker  # container runtime, docker|containerd|crio
   ipsec:

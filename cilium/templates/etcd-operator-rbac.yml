@@ -95,3 +95,4 @@ subjects:
 - kind: ServiceAccount
   name: {{ template "cilium.fullname" . }}-etcd-operator
   namespace: {{ .Release.Namespace }}
+{{- end -}}

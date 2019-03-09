@@ -1,4 +1,4 @@
-{{- $prometheus_port := index .Values.agent.config "prometheus-serve-addr"|splitList ":"|last -}}
+{{- $prometheus_port := splitList ":" (toString (index .Values.agent.config "prometheus-serve-addr"))|last -}}
 apiVersion: {{ include "apps.apiVersion" . }}
 kind: DaemonSet
 metadata:
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/cm.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/agent-cm.yml") . | sha256sum }}
       {{- if hasKey .Values.agent.config "prometheus-serve-addr" }}
         prometheus.io/port: {{ $prometheus_port }}
         prometheus.io/scrape: "true"
@@ -44,9 +44,9 @@ spec:
       - args:
         - --kvstore=etcd
         - --kvstore-opt=etcd.config=/etc/etcd.yml
-        - --container-runtime={{ .Values.runtime }}
+        - --container-runtime={{ .Values.agent.runtime }}
         - --config-dir=/etc/cilium
-      {{- if .Values.ipsec.enabled }}
+      {{- if .Values.agent.ipsec.enable }}
         - --enable-ipsec
         - --ipsec-key-file=/etc/pki/ipsec
       {{- end }}
@@ -80,8 +80,8 @@ spec:
               optional: true
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
+        imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
         lifecycle:
           postStart:
             exec:
@@ -228,7 +228,7 @@ spec:
         name: etc-cni-netd
       # To read the configuration from the config map
       - configMap:
-          name: cilium-config
+          name: {{ template "cilium.fullname" . }}-config
         name: cilium-config
       # To read the etcd config stored in config maps
       - configMap:
@@ -236,7 +236,7 @@ spec:
           items:
           - key: etcd-config
             path: etcd.yml
-          name: cilium-config
+          name: {{ template "cilium.fullname" . }}-config
         name: etcd-config-path
       # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets

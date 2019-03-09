@@ -13,8 +13,8 @@ data:
   # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config
   etcd-config: |-
     endpoints:
-  {{- if .Values.etcd.endpoints }}
-    {{ toYaml .Values.etcd.endpoints | indent 4 }}
+  {{- if hasKey .Values.etcd "endpoints" }}
+{{ toYaml .Values.etcd.endpoints | indent 4 }}
   {{- else }}
    - https://{{ template "cilium.fullname" . }}-etcd-client.{{ .Release.Namespace }}.svc:2379
   {{- end }}
@@ -29,4 +29,4 @@ data:
     # https://cilium.link/etcd-config
     key-file: '/etc/pki/etcd/etcd-client.key'
     cert-file: '/etc/pki/etcd/etcd-client.crt'
-{{ toYaml .Values.config | indent 2 }}
+{{ toYaml .Values.agent.config | indent 2 }}
