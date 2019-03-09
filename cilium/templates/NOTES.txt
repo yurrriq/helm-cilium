@@ -1,3 +1,4 @@
+{{/* vim: set filetype=mustache: */}}
 Cilium has been deployed into the cluster, congratulations!
 
 You can see what's happenin'
@@ -6,7 +7,7 @@ You can see what's happenin'
 Proceed with policies & goodness
 
 
-{{- if not .Values.etcd.operator.create }}
+{{- if not .Values.etcd.operator.enable }}
 Remmember to inject the etcd-secret
 
 {{- end }}

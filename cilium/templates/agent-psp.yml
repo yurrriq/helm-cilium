@@ -1,5 +1,5 @@
 {{/* vim: set filetype=mustache: */}}
-{{- if .Values.psp.create -}}
+{{- if .Values.psp.enable -}}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -47,7 +47,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: agent
-  name: psp:cilium:agent:{{ template "cilium.fullname" . }}
+  name: psp:cilium:{{ template "cilium.fullname" . }}
 rules:
 - apiGroups: ['policy']
   resources: ['podsecuritypolicies']

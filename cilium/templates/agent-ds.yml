@@ -1,4 +1,5 @@
-{{- $prometheus_port := splitList ":" (toString (index .Values.agent.config "prometheus-serve-addr"))|last -}}
+{{/* vim: set filetype=mustache: */}}
+{{- $prometheus_port := splitList ":" (toString (index .Values.config "prometheus-serve-addr"))|last -}}
 apiVersion: {{ include "apps.apiVersion" . }}
 kind: DaemonSet
 metadata:
@@ -19,7 +20,7 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/agent-cm.yml") . | sha256sum }}
-      {{- if hasKey .Values.agent.config "prometheus-serve-addr" }}
+      {{- if hasKey .Values.config "prometheus-serve-addr" }}
         prometheus.io/port: {{ $prometheus_port }}
         prometheus.io/scrape: "true"
       {{- end }}
@@ -105,7 +106,7 @@ spec:
           successThreshold: 1
           timeoutSeconds: 1
         name: cilium-agent
-      {{- if hasKey .Values.agent.config "prometheus-serve-addr" }}
+      {{- if hasKey .Values.config "prometheus-serve-addr" }}
         ports:
         - containerPort: {{ $prometheus_port }}
           hostPort: {{ $prometheus_port }}

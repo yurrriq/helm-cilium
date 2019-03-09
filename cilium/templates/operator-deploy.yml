@@ -1,3 +1,5 @@
+{{/* vim: set filetype=mustache: */}}
+{{- if .Values.operator.enable -}}
 apiVersion: {{ include "apps.apiVersion" . }}
 kind: Deployment
 metadata:
@@ -132,3 +134,4 @@ spec:
           defaultMode: 420
           optional: true
           secretName: cilium-etcd-secrets
+{{- end -}}

@@ -1,5 +1,5 @@
 {{/* vim: set filetype=mustache: */}}
-{{- if and .Values.rbac.create .Values.operator.create -}}
+{{- if and .Values.rbac.enable .Values.operator.enable -}}
 apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:

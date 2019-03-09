@@ -1,3 +1,4 @@
+{{/* vim: set filetype=mustache: */}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -29,4 +30,4 @@ data:
     # https://cilium.link/etcd-config
     key-file: '/etc/pki/etcd/etcd-client.key'
     cert-file: '/etc/pki/etcd/etcd-client.crt'
-{{ toYaml .Values.agent.config | indent 2 }}
+{{ toYaml .Values.config | indent 2 }}

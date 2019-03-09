@@ -1,24 +1,37 @@
----
-apiVersion: rbac.authorization.k8s.io/v1
+{{/* vim: set filetype=mustache: */}}
+{{- if .Values.rbac.enable -}}
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
 metadata:
-  name: cilium
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: agent
+  name: cilium:{{ template "cilium.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cilium
+  name: cilium:{{ template "cilium.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: cilium
-  namespace: kube-system
+  name: {{ template "cilium.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: system:nodes
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRole
 metadata:
-  name: cilium
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: agent
+  name: cilium:{{ template "cilium.fullname" . }}
 rules:
 - apiGroups:
   - networking.k8s.io
@@ -78,9 +91,4 @@ rules:
   - ciliumendpoints/status
   verbs:
   - '*'
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cilium
-  namespace: kube-system
+{{- end -}}

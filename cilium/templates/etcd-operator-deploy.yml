@@ -1,3 +1,5 @@
+{{/* vim: set filetype=mustache: */}}
+{{- if .Values.etcd.operator.enable -}}
 apiVersion: {{ include "apps.apiVersion" . }}
 kind: Deployment
 metadata:
@@ -66,3 +68,4 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end -}}
+{{- end -}}

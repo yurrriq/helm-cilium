@@ -1,3 +1,4 @@
+{{/* vim: set filetype=mustache: */}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
