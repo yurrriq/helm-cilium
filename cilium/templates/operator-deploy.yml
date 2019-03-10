@@ -23,10 +23,11 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-    {{- with .Values.operator.annotations }}
       annotations:
-{{ toYaml . | indent 8 }}
-    {{- end -}}
+        checksum/config: {{ include (print $.Template.BasePath "/cilium-cm.yml") . | sha256sum }}
+    {{- with .Values.operator.annotations }}
+      {{ toYaml . | indent 8 }}
+    {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "cilium.name" . }}
         helm.sh/chart: {{ include "cilium.chart" . }}
@@ -35,7 +36,7 @@ spec:
         app.kubernetes.io/component: operator
     {{- with .Values.operator.labels }}
 {{ toYaml . | indent 8 }}
-    {{- end -}}
+    {{- end }}
     spec:
       containers:
       - args:
@@ -118,7 +119,7 @@ spec:
     {{- with .Values.agent.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
-    {{- end -}}
+    {{- end }}
       volumes:
       # To read the etcd config stored in config maps
       - configMap:
@@ -130,8 +131,12 @@ spec:
         name: etcd-config-path
         # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets
+    {{- if hasKey .Values.etcd "secretVolume" }}
+{{ toYaml .Values.etcd.secretVolume | indent 8 }}
+    {{- else  }}
         secret:
           defaultMode: 420
           optional: true
-          secretName: cilium-etcd-secrets
+          secretName: {{ .Values.etcd.secretName | default (printf "%s-etcd" (include "cilium.fullname" .)) }}
+    {{- end }}
 {{- end -}}
