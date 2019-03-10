@@ -120,6 +120,10 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- with .Values.operator.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       volumes:
       # To read the etcd config stored in config maps
       - configMap:

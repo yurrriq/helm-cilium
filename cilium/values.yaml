@@ -16,14 +16,22 @@ operator:
   enable: true
   image:
     registry: docker.io
-    repository: cilium-operator
+    repository: cilium/cilium-operator
     tag: v1.4.2
     pullPolicy: IfNotPresent
   dnsPolicy: ClusterFirstWithHostNet
   annotations: {}
   labels: {}
-  tolerations:
-  - operator: Exists
+  affinity: {}                       # Affinity, to schedule only on 'master' nodes:
+    #nodeAffinity:
+    #  requiredDuringSchedulingIgnoredDuringExecution:
+    #    nodeSelectorTerms:
+    #    - matchExpressions:
+    #       - key: kubernetes.io/role
+    #         operator: In
+    #         values:
+    #         - master
+  tolerations: {}
 
 
 etcd:
@@ -38,15 +46,15 @@ etcd:
     enable: true
     image:
       registry: docker.io
-      repository: cilium-etcd-operator
+      repository: cilium/cilium-etcd-operator
       tag: v2.0.5
       pullPolicy: IfNotPresent
 
     dnsPolicy: ClusterFirstWithHostNet
     annotations: {}
     labels: {}
-    tolerations:
-    - operator: Exists
+    affinity: {}
+    tolerations: {}
 
     cluster_size: 3                    # Spawn etcd clusters of this size
 
@@ -67,8 +75,9 @@ agent:
   dnsPolicy: ClusterFirstWithHostNet
   annotations: {}
   labels: {}
+  affinity: {}
   tolerations:
-  - operator: Exists
+  - operator: Exists    # Tolerate all taints
 
   env: []               # Additional environment for the DaemonSet
   # - name: IMATEAPOT

@@ -9,7 +9,7 @@ examples:
 	mkdir generated
 	for kube in $(KUBE_VERSIONS); do
 		echo Generating example deployment for $${kube}...
-	    mkdir -p examples/k8s-$${kube}/
+	    mkdir -p generated/k8s-$${kube}/
 		$(helm) template \
 		  --namespace=kube-system \
 		  --kube-version=$$kube \
@@ -19,7 +19,7 @@ examples:
 		  cilium/
 	done
 	echo Generating example deployment for minikube...
-	mkdir -p examples/minikube/
+	mkdir -p generated/minikube/
 	$(helm) template \
 	  --namespace=kube-system \
 	  --kube-version=$$kube \

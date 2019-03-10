@@ -13,8 +13,18 @@
 * toggle rbac
 * toggle psp
 * runtime (docker, container-d or crio)
-* full config and env configurabilituy
 * toggle ipsec
+* full config configurabilituy
+* custom env, labels, annotations, affinity
+
+
+### Namespacing
+
+Although namespace is parsed correctly, 
+cilium agent runs with a `priorityClass` of `system-node-critical`.
+This is currently only allowed in `kube-system`, 
+although that <should> change in the future 
+(not sure though, the story in PR's/issues is a bit messy)
 
 
 ## Values & settings
