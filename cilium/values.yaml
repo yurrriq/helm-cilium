@@ -228,4 +228,3 @@ config:
 
   # Operator
   # disable-endpoint-crd: false    # If you want to disable endpoint CRD generation, enable this
-
