@@ -1,16 +1,15 @@
 # Default values for cilium
-
 nameOverride: ""
-fullnameOverride: ""  # Examples use "cilium"
+fullnameOverride: ""          # Examples use "cilium"
 
-dns:
-  domain: cluster.local
+global:
+  domain_kube: cluster.local  # Kubernetes cluster domain (used by etcd-operator)
 
 rbac:
-  enable: true  # If true, create & use RBAC resources
+  enable: true                # If true, create & use RBAC resources
 
 psp:
-  enable: true  # If true, create and use PodSecurityPolicy
+  enable: true                # If true, create and use PodSecurityPolicy
 
 
 operator:
@@ -28,10 +27,10 @@ operator:
 
 
 etcd:
-  #endpoints:     # unused with operator
+  #endpoints:                           # unused with operator
   #- http://EDIT-ME-ETCD-ADDRESS:2379
-  secretName:     # default {fullname}-etcd-client
-  #secretVolume:  # Override the secret volume mount, e.g.:
+  secretName:                           # default {fullname}-etcd-client
+  #secretVolume:                        # Override the secret volume mount, e.g.:
   #  hostPath:
   #    path: /var/lib/minikube/certs/
   #    type: DirectoryOrCreate
@@ -49,7 +48,7 @@ etcd:
     tolerations:
     - operator: Exists
 
-    cluster_size: 3
+    cluster_size: 3                    # Spawn etcd clusters of this size
 
 
 agent:
@@ -71,16 +70,17 @@ agent:
   tolerations:
   - operator: Exists
 
-  env: {}           # Additional environment for the DaemonSet
+  env: []               # Additional environment for the DaemonSet
   # - name: IMATEAPOT
   #   value: 42
 
-  runtime: docker  # container runtime, docker|containerd|crio
+  runtime: docker       # container runtime, docker|containerd|crio
   ipsec:
     enable: false
-    secretName:    # default {fullname}-ipsec
+    secretName:         # default {fullname}-ipsec
   clustermesh:
-    secretName:    # default {fullname}-clustermesh
+    secretName:         # default {fullname}-clustermesh
+
 
 config:
   debug: "false"  # If you want to run cilium in debug mode change this value to true

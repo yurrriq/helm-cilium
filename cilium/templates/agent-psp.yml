@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: agent
-  name: cilium:{{ template "cilium.fullname" . }}
+  name: {{ template "cilium.fullname" . }}
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
 spec:
@@ -47,13 +47,13 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: agent
-  name: psp:cilium:{{ template "cilium.fullname" . }}
+  name: psp:{{ template "cilium.fullname" . }}
 rules:
 - apiGroups: ['policy']
   resources: ['podsecuritypolicies']
   verbs:     ['use']
   resourceNames:
-  - cilium:{{ template "cilium.fullname" . }}
+  - {{ template "cilium.fullname" . }}
 ---
 apiVersion: {{ include "rbac.apiVersion" . }}
 kind: ClusterRoleBinding
@@ -64,11 +64,11 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: agent
-  name: psp:cilium:{{ template "cilium.fullname" . }}
+  name: psp:{{ template "cilium.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: psp:cilium:{{ template "cilium.fullname" . }}
+  name: psp:{{ template "cilium.fullname" . }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "cilium.fullname" . }}

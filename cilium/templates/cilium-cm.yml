@@ -17,7 +17,7 @@ data:
   {{- if hasKey .Values.etcd "endpoints" }}
 {{ toYaml .Values.etcd.endpoints | indent 4 }}
   {{- else }}
-   - https://{{ template "cilium.fullname" . }}-etcd-client.{{ .Release.Namespace }}.svc:2379
+    - https://{{ template "cilium.fullname" . }}-etcd-client.{{ .Release.Namespace }}.svc:2379
   {{- end }}
     #
     # In case you want to use TLS in etcd, uncomment the 'ca-file' line

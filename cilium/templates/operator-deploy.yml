@@ -128,7 +128,7 @@ spec:
           - key: etcd-config
             path: etcd.yml
           name: {{ template "cilium.fullname" . }}-config
-        name: etcd-config-path
+        name: etcd-config
         # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets
     {{- if hasKey .Values.etcd "secretVolume" }}
