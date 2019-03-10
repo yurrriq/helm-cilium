@@ -1,0 +1,7 @@
+fullnameOverride: cilium
+
+etcd:
+  secretVolume:  # Override the secret volume mount, e.g.:
+    hostPath:
+      path: /var/lib/minikube/certs/
+      type: DirectoryOrCreate

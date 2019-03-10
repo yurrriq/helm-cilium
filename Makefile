@@ -27,3 +27,6 @@ examples:
 	  -f cilium/examples/minikube.yml \
 	  --output-dir examples/minikube/ \
 	  cilium/
+
+clean:
+	rm -rf examples/
