@@ -16,10 +16,14 @@ operator:
   enable: true
   image:
     registry: docker.io
-    repository: cilium/cilium-operator
+    repository: cilium/operator
     tag: v1.4.2
     pullPolicy: IfNotPresent
-  dnsPolicy: ClusterFirstWithHostNet
+  dnsPolicy: ClusterFirst
+  hostAliases: []                    # Add entries to hosts
+  #  - ip: "1.2.3.4"
+  #    hostnames:
+  #    - "kube.example.com"
   annotations: {}
   labels: {}
   affinity: {}                       # Affinity, to schedule only on 'master' nodes:
@@ -32,12 +36,15 @@ operator:
     #         values:
     #         - master
   tolerations: {}
+  env: []
+  # - name: IMATEAPOT
+  #   value: 42
 
 
 etcd:
   #endpoints:                           # unused with operator
   #- http://EDIT-ME-ETCD-ADDRESS:2379
-  secretName:                           # default {fullname}-etcd-client
+  secretName:                           # default {fullname}-etcd
   #secretVolume:                        # Override the secret volume mount, e.g.:
   #  hostPath:
   #    path: /var/lib/minikube/certs/
@@ -51,11 +58,12 @@ etcd:
       pullPolicy: IfNotPresent
 
     dnsPolicy: ClusterFirstWithHostNet
+    hostAliases: []
     annotations: {}
     labels: {}
     affinity: {}
     tolerations: {}
-
+    env: []
     cluster_size: 3                    # Spawn etcd clusters of this size
 
 
@@ -73,6 +81,7 @@ agent:
     pullPolicy: IfNotPresent
 
   dnsPolicy: ClusterFirstWithHostNet
+  hostAliases: []
   annotations: {}
   labels: {}
   affinity: {}
@@ -80,8 +89,6 @@ agent:
   - operator: Exists    # Tolerate all taints
 
   env: []               # Additional environment for the DaemonSet
-  # - name: IMATEAPOT
-  #   value: 42
 
   runtime: docker       # container runtime, docker|containerd|crio
   ipsec:

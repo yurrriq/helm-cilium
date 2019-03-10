@@ -46,6 +46,9 @@ spec:
         command:
         - cilium-operator
         env:
+      {{- with .Values.operator.env }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -110,6 +113,10 @@ spec:
           name: etcd-secrets
           readOnly: true
       dnsPolicy: {{ .Values.operator.dnsPolicy }}
+    {{- with .Values.agent.hostAliases }}
+      hostAliases:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       restartPolicy: Always
     {{- if semverCompare "<= 1.8-0" .Capabilities.KubeVersion.GitVersion }}
       serviceAccount: {{ template "cilium.fullname" . }}-operator

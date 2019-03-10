@@ -47,7 +47,7 @@ spec:
         - --kvstore=etcd
         - --kvstore-opt=etcd.config=/etc/etcd.yml
         - --container-runtime={{ .Values.agent.runtime }}
-        - --config-dir=/etc/cilium
+        - --config=/etc/cilium
       {{- if .Values.agent.ipsec.enable }}
         - --enable-ipsec
         - --ipsec-key-file=/etc/pki/ipsec
@@ -91,7 +91,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: prometheus-serve-addr
-              name: cilium-metrics-config
+              name: cilium-config
               optional: true
         - name: CILIUM_LEGACY_HOST_ALLOWS_WORLD
           valueFrom:
@@ -272,6 +272,9 @@ spec:
         - mountPath: /etc/pki/etcd
           name: etcd-secrets
           readOnly: true
+        - mountPath: /etc/pki/ipsec
+          name: ipsec-secrets
+          readOnly: true
         - mountPath: /var/lib/cilium/clustermesh
           name: clustermesh-secrets
           readOnly: true
@@ -289,6 +292,10 @@ spec:
           name: crio-socket
       {{- end }}
       dnsPolicy: {{ .Values.agent.dnsPolicy }}
+    {{- with .Values.agent.hostAliases }}
+      hostAliases:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       hostNetwork: true
       hostPID: false
       initContainers:

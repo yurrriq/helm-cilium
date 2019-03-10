@@ -34,6 +34,9 @@ spec:
       - command:
         - /usr/bin/cilium-etcd-operator
         env:
+      {{- with .Values.etcd.operator.env }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
         - name: CILIUM_ETCD_OPERATOR_CLUSTER_DOMAIN
           value: "{{ .Values.global.domain_kube }}"
         - name: CILIUM_ETCD_OPERATOR_ETCD_CLUSTER_SIZE
@@ -57,6 +60,10 @@ spec:
         imagePullPolicy: {{ .Values.etcd.operator.image.pullPolicy }}
         name: cilium-etcd-operator
       dnsPolicy: {{ .Values.etcd.operator.dnsPolicy }}
+    {{- with .Values.agent.hostAliases }}
+      hostAliases:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       hostNetwork: true
       restartPolicy: Always
     {{- if semverCompare "<= 1.8-0" .Capabilities.KubeVersion.GitVersion }}
