@@ -6,11 +6,16 @@ global:
   domain_kube: cluster.local  # Kubernetes cluster domain (used by etcd-operator)
 
 rbac:
-  enable: true                # If true, create & use RBAC resources
+  enable: true                # Enables all RBAC resources
 
 psp:
-  enable: true                # If true, create and use PodSecurityPolicy
+  enable: true                # Enables PodSecurityPolicies for all components
+                              # (and RBAC bindings, regardless of rbac.enable)
 
+preflight:                    # Enable pre-flight check of nodes before install
+  enable: true
+  # Remove preflight remains
+  deletePolicy: hook-failed,hook-succeeded,before-hook-creation
 
 operator:
   enable: true

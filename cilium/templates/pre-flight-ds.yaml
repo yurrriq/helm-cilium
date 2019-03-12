@@ -1,0 +1,93 @@
+{{/* vim: set filetype=mustache: */}}
+{{- if .Values.preflight.enable -}}
+apiVersion: {{ include "apps.apiVersion" . }}
+kind: DaemonSet
+metadata:
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: {{ .Values.preflight.deletePolicy }}
+  labels:
+    app.kubernetes.io/name: {{ include "cilium.name" . }}
+    helm.sh/chart: {{ include "cilium.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: pre-flight-check
+    kubernetes.io/cluster-service: "true"
+  name: {{ template "cilium.fullname" . }}-pre-flight-check
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: pre-flight-check
+  template:
+    metadata:
+      {{- if semverCompare "< 1.11-0" .Capabilities.KubeVersion.GitVersion }}
+        scheduler.alpha.kubernetes.io/critical-pod: ""  # https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+      {{- end }}
+
+      {{- with .Values.agent.annotations }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "cilium.name" . }}
+        helm.sh/chart: {{ include "cilium.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: pre-flight-check
+        kubernetes.io/cluster-service: "true"
+      {{- with .Values.agent.labels }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+    spec:
+      initContainers:
+        - name: clean-cilium-state
+          image: "{{ .Values.agent.init_image.repository }}:{{ .Values.agent.init_image.tag }}"
+          imagePullPolicy: {{ .Values.agent.init_image.pullPolicy }}
+          command: ["/bin/echo"]
+          args:
+          - "hello"
+      containers:
+        - image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
+          imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
+          name: {{ template "cilium.fullname" . }}-pre-flight-check
+          command: ["/bin/sh"]
+          args:
+          - -c
+          - "cilium preflight fqdn-poller --tofqdns-pre-cache /var/run/cilium/dns-precache-upgrade.json && touch /tmp/ready; sleep 1h"
+          livenessProbe:
+            exec:
+              command:
+              - cat
+              - /tmp/ready
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+              - cat
+              - /tmp/ready
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+          - mountPath: /var/run/cilium
+            name: cilium-run
+      hostNetwork: true
+    {{- if semverCompare "=> 1.11-0" .Capabilities.KubeVersion.GitVersion }}
+      priorityClassName: system-node-critical
+    {{- end }}
+      restartPolicy: Never
+    {{- with .Values.agent.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.agent.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        # To keep state between restarts / upgrades
+      - hostPath:
+          path: /var/run/cilium
+          type: DirectoryOrCreate
+        name: cilium-run
+{{- end }}
