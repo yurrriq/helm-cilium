@@ -72,18 +72,18 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: debug
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
         - name: CILIUM_ENABLE_IPV4
           valueFrom:
             configMapKeyRef:
               key: enable-ipv4
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_ENABLE_IPV6
           valueFrom:
             configMapKeyRef:
               key: enable-ipv6
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
           # Note: this variable is a no-op if not defined, and is used in the
           # prometheus examples.
@@ -91,31 +91,31 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: prometheus-serve-addr
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_LEGACY_HOST_ALLOWS_WORLD
           valueFrom:
             configMapKeyRef:
               key: legacy-host-allows-world
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_SIDECAR_ISTIO_PROXY_IMAGE
           valueFrom:
             configMapKeyRef:
               key: sidecar-istio-proxy-image
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_TUNNEL
           valueFrom:
             configMapKeyRef:
               key: tunnel
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_MONITOR_AGGREGATION_LEVEL
           valueFrom:
             configMapKeyRef:
               key: monitor-aggregation-level
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_CLUSTERMESH_CONFIG
           value: /var/lib/cilium/clustermesh/
@@ -123,91 +123,91 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: cluster-name
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_CLUSTER_ID
           valueFrom:
             configMapKeyRef:
               key: cluster-id
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_GLOBAL_CT_MAX_TCP
           valueFrom:
             configMapKeyRef:
               key: ct-global-max-entries-tcp
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_GLOBAL_CT_MAX_ANY
           valueFrom:
             configMapKeyRef:
               key: ct-global-max-entries-other
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_PREALLOCATE_BPF_MAPS
           valueFrom:
             configMapKeyRef:
               key: preallocate-bpf-maps
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_FLANNEL_MASTER_DEVICE
           valueFrom:
             configMapKeyRef:
               key: flannel-master-device
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_FLANNEL_UNINSTALL_ON_EXIT
           valueFrom:
             configMapKeyRef:
               key: flannel-uninstall-on-exit
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_FLANNEL_MANAGE_EXISTING_CONTAINERS
           valueFrom:
             configMapKeyRef:
               key: flannel-manage-existing-containers
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_DATAPATH_MODE
           valueFrom:
             configMapKeyRef:
               key: datapath-mode
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_IPVLAN_MASTER_DEVICE
           valueFrom:
             configMapKeyRef:
               key: ipvlan-master-device
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_INSTALL_IPTABLES_RULES
           valueFrom:
             configMapKeyRef:
               key: install-iptables-rules
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_MASQUERADE
           valueFrom:
             configMapKeyRef:
               key: masquerade
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_AUTO_DIRECT_NODE_ROUTES
           valueFrom:
             configMapKeyRef:
               key: auto-direct-node-routes
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_TOFQDNS_ENABLE_POLLER
           valueFrom:
             configMapKeyRef:
               key: tofqdns-enable-poller
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_TOFQDNS_PRE_CACHE
           valueFrom:
             configMapKeyRef:
               key: tofqdns-pre-cache
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
         imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
@@ -279,7 +279,7 @@ spec:
           name: clustermesh-secrets
           readOnly: true
         - mountPath: /etc/cilium
-          name: cilium-config
+          name: {{ template "cilium.fullname" . }}
           readOnly: true
       {{- if eq .Values.agent.runtime "docker" }}
         - mountPath: /var/run/docker.sock
@@ -306,13 +306,13 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: clean-cilium-state
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CLEAN_CILIUM_BPF_STATE
           valueFrom:
             configMapKeyRef:
               key: clean-cilium-bpf-state
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         image: "{{ .Values.agent.init_image.repository }}:{{ .Values.agent.init_image.tag }}"
         imagePullPolicy: {{ .Values.agent.init_image.pullPolicy }}
@@ -368,15 +368,15 @@ spec:
         name: etc-cni-netd
       # To read the configuration from the config map
       - configMap:
-          name: {{ template "cilium.fullname" . }}-config
-        name: cilium-config
+          name: {{ template "cilium.fullname" . }}
+        name: {{ template "cilium.fullname" . }}
       # To read the etcd config stored in config maps
       - configMap:
           defaultMode: 420
           items:
           - key: etcd-config
             path: etcd.yml
-          name: {{ template "cilium.fullname" . }}-config
+          name: {{ template "cilium.fullname" . }}
         name: etcd-config
       # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets

@@ -63,25 +63,25 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: debug
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_CLUSTER_NAME
           valueFrom:
             configMapKeyRef:
               key: cluster-name
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_CLUSTER_ID
           valueFrom:
             configMapKeyRef:
               key: cluster-id
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: CILIUM_DISABLE_ENDPOINT_CRD
           valueFrom:
             configMapKeyRef:
               key: disable-endpoint-crd
-              name: cilium-config
+              name: {{ template "cilium.fullname" . }}
               optional: true
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
@@ -138,7 +138,7 @@ spec:
           items:
           - key: etcd-config
             path: etcd.yml
-          name: {{ template "cilium.fullname" . }}-config
+          name: {{ template "cilium.fullname" . }}
         name: etcd-config
         # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets
