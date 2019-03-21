@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: agent
-  name: {{ template "cilium.fullname" . }}-config
+  name: {{ template "cilium.fullname" . }}
 data:
   # This etcd-config contains the etcd endpoints of your cluster. If you use
   # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config
