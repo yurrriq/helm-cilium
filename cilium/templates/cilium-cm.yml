@@ -7,12 +7,14 @@ metadata:
     helm.sh/chart: {{ include "cilium.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: agent
   name: {{ template "cilium.fullname" . }}
 data:
-  # This etcd-config contains the etcd endpoints of your cluster. If you use
-  # TLS please make sure you follow the tutorial in https://cilium.link/etcd-config
-  etcd-config: |-
+  clean-cilium-state: '{{ index .Values.agent "clean-cilium-state" }}'
+  clean-cilium-bpf-state: '{{ index .Values.agent "clean-cilium-bpf-state" }}'
+  debug: '{{ .Values.config.debug }}'
+  etcd: |-
+    # This etcd-config contains the etcd endpoints of your cluster. If you use TLS
+    # please make sure you follow the tutorial in https://cilium.link/etcd-config
     endpoints:
   {{- if hasKey .Values.etcd "endpoints" }}
 {{ toYaml .Values.etcd.endpoints | indent 4 }}
@@ -30,4 +32,5 @@ data:
     # https://cilium.link/etcd-config
     key-file: /etc/pki/etcd/etcd-client.key
     cert-file: /etc/pki/etcd/etcd-client.crt
-{{ toYaml .Values.config | indent 2 }}
+  cilium: |-
+{{ toYaml .Values.config | indent 4 }}

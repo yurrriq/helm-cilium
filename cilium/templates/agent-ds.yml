@@ -45,13 +45,9 @@ spec:
       - args:
         - --debug=$(CILIUM_DEBUG)
         - --kvstore=etcd
-        - --kvstore-opt=etcd.config=/etc/etcd.yml
+        - --kvstore-opt=etcd.config=/etc/cilium/etcd.yml
         - --container-runtime={{ .Values.agent.runtime }}
-        - --config=/etc/cilium
-      {{- if .Values.agent.ipsec.enable }}
-        - --enable-ipsec
-        - --ipsec-key-file=/etc/pki/ipsec
-      {{- end }}
+        - --config=/etc/cilium/config.yml
         command:
         - cilium-agent
         env:
@@ -73,142 +69,6 @@ spec:
             configMapKeyRef:
               key: debug
               name: {{ template "cilium.fullname" . }}
-        - name: CILIUM_ENABLE_IPV4
-          valueFrom:
-            configMapKeyRef:
-              key: enable-ipv4
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_ENABLE_IPV6
-          valueFrom:
-            configMapKeyRef:
-              key: enable-ipv6
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-          # Note: this variable is a no-op if not defined, and is used in the
-          # prometheus examples.
-        - name: CILIUM_PROMETHEUS_SERVE_ADDR
-          valueFrom:
-            configMapKeyRef:
-              key: prometheus-serve-addr
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_LEGACY_HOST_ALLOWS_WORLD
-          valueFrom:
-            configMapKeyRef:
-              key: legacy-host-allows-world
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_SIDECAR_ISTIO_PROXY_IMAGE
-          valueFrom:
-            configMapKeyRef:
-              key: sidecar-istio-proxy-image
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_TUNNEL
-          valueFrom:
-            configMapKeyRef:
-              key: tunnel
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_MONITOR_AGGREGATION_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              key: monitor-aggregation-level
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_CLUSTERMESH_CONFIG
-          value: /var/lib/cilium/clustermesh/
-        - name: CILIUM_CLUSTER_NAME
-          valueFrom:
-            configMapKeyRef:
-              key: cluster-name
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_CLUSTER_ID
-          valueFrom:
-            configMapKeyRef:
-              key: cluster-id
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_GLOBAL_CT_MAX_TCP
-          valueFrom:
-            configMapKeyRef:
-              key: ct-global-max-entries-tcp
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_GLOBAL_CT_MAX_ANY
-          valueFrom:
-            configMapKeyRef:
-              key: ct-global-max-entries-other
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_PREALLOCATE_BPF_MAPS
-          valueFrom:
-            configMapKeyRef:
-              key: preallocate-bpf-maps
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_FLANNEL_MASTER_DEVICE
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-master-device
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_FLANNEL_UNINSTALL_ON_EXIT
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-uninstall-on-exit
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_FLANNEL_MANAGE_EXISTING_CONTAINERS
-          valueFrom:
-            configMapKeyRef:
-              key: flannel-manage-existing-containers
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_DATAPATH_MODE
-          valueFrom:
-            configMapKeyRef:
-              key: datapath-mode
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_IPVLAN_MASTER_DEVICE
-          valueFrom:
-            configMapKeyRef:
-              key: ipvlan-master-device
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_INSTALL_IPTABLES_RULES
-          valueFrom:
-            configMapKeyRef:
-              key: install-iptables-rules
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_MASQUERADE
-          valueFrom:
-            configMapKeyRef:
-              key: masquerade
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_AUTO_DIRECT_NODE_ROUTES
-          valueFrom:
-            configMapKeyRef:
-              key: auto-direct-node-routes
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_TOFQDNS_ENABLE_POLLER
-          valueFrom:
-            configMapKeyRef:
-              key: tofqdns-enable-poller
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_TOFQDNS_PRE_CACHE
-          valueFrom:
-            configMapKeyRef:
-              key: tofqdns-pre-cache
-              name: {{ template "cilium.fullname" . }}
-              optional: true
         image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
         imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
         lifecycle:
@@ -265,10 +125,6 @@ spec:
           name: cni-path
         - mountPath: /host/etc/cni/net.d
           name: etc-cni-netd
-        - mountPath: /etc/etcd.yml
-          subPath: etcd.yml
-          name: etcd-config
-          readOnly: true
         - mountPath: /etc/pki/etcd
           name: etcd-secrets
           readOnly: true
@@ -279,7 +135,7 @@ spec:
           name: clustermesh-secrets
           readOnly: true
         - mountPath: /etc/cilium
-          name: {{ template "cilium.fullname" . }}
+          name: cilium-config
           readOnly: true
       {{- if eq .Values.agent.runtime "docker" }}
         - mountPath: /var/run/docker.sock
@@ -368,16 +224,14 @@ spec:
         name: etc-cni-netd
       # To read the configuration from the config map
       - configMap:
-          name: {{ template "cilium.fullname" . }}
-        name: {{ template "cilium.fullname" . }}
-      # To read the etcd config stored in config maps
-      - configMap:
-          defaultMode: 420
           items:
-          - key: etcd-config
+          - key: etcd
             path: etcd.yml
+          - key: cilium
+            path: config.yml
+          defaultMode: 420
           name: {{ template "cilium.fullname" . }}
-        name: etcd-config
+        name: cilium-config
       # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets
     {{- if hasKey .Values.etcd "secretVolume" }}

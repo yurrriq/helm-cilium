@@ -102,6 +102,21 @@ agent:
   clustermesh:
     secretName:         # default {fullname}-clustermesh
 
+  # If a serious issue occurs during Cilium startup, this
+  # invasive option may be set to true to remove all persistent
+  # state. Endpoints will not be restored using knowledge from a
+  # prior Cilium run, so they may receive new IP addresses upon
+  # restart. This also triggers clean-cilium-bpf-state.
+  clean-cilium-state: False
+  # If you want to clean cilium BPF state, set this to true;
+  # Removes all BPF maps from the filesystem. Upon restart,
+  # endpoints are restored with the same IP addresses, however
+  # any ongoing connections may be disrupted briefly.
+  # Loadbalancing decisions will be reset, so any ongoing
+  # connections via a service may be loadbalanced to a different
+  # backend after restart.
+  clean-cilium-bpf-state: False
+
 
 config:
   debug: 'false'  # If you want to run cilium in debug mode change this value to true
@@ -113,21 +128,6 @@ config:
 
   enable-ipv4: 'true'   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4 address.
   enable-ipv6: 'false'  # Enable IPv6 addressing. If enabled, all endpoints are allocated an IPv6 address.
-
-  # If a serious issue occurs during Cilium startup, this
-  # invasive option may be set to true to remove all persistent
-  # state. Endpoints will not be restored using knowledge from a
-  # prior Cilium run, so they may receive new IP addresses upon
-  # restart. This also triggers clean-cilium-bpf-state.
-  clean-cilium-state: 'false'
-  # If you want to clean cilium BPF state, set this to true;
-  # Removes all BPF maps from the filesystem. Upon restart,
-  # endpoints are restored with the same IP addresses, however
-  # any ongoing connections may be disrupted briefly.
-  # Loadbalancing decisions will be reset, so any ongoing
-  # connections via a service may be loadbalanced to a different
-  # backend after restart.
-  clean-cilium-bpf-state: 'false'
 
   # In Cilium 1.0, all traffic from the host, including from local processes
   # and traffic that is masqueraded from the outside world to the host IP,
@@ -163,7 +163,7 @@ config:
   #
   # For users upgrading from Cilium 1.2 or earlier, to minimize disruption
   # during the upgrade process, comment out these options.
-  ct-global-max-entries-tcp: '524288'
+  ct-global-max-entries-tcp: 524288
   ct-global-max-entries-other: '262144'
 
   # Pre-allocation of map entries allows per-packet latency to be reduced, at
