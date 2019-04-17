@@ -22,7 +22,7 @@ operator:
   image:
     registry: docker.io
     repository: cilium/operator
-    tag: v1.4.2
+    tag: v1.5.0-rc4
     pullPolicy: IfNotPresent
   dnsPolicy: ClusterFirst
   hostAliases: []                    # Add entries to hosts
@@ -76,7 +76,7 @@ agent:
   image:
     registry: docker.io
     repository: cilium/cilium
-    tag: v1.4.2
+    tag: v1.5.0-rc4
     pullPolicy: IfNotPresent
 
   init_image:
