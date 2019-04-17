@@ -18,6 +18,7 @@ spec:
   allowedCapabilities:
   - NET_ADMIN
   - SYS_RESOURCE
+  - SYS_MODULE
   volumes:
   - '*'
   hostNetwork: true

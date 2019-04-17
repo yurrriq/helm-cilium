@@ -31,6 +31,8 @@ spec:
         app.kubernetes.io/component: etcd-operator
     spec:
       containers:
+      - args:
+        #- --etcd-node-selector=disktype=ssd,cputype=high
       - command:
         - /usr/bin/cilium-etcd-operator
         env:
@@ -56,6 +58,10 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.uid
+        - name: CILIUM_ETCD_META_ETCD_AUTO_COMPACTION_MODE
+          value: "revision"
+        - name: CILIUM_ETCD_META_ETCD_AUTO_COMPACTION_RETENTION
+          value: "25000"
         image: "{{ .Values.etcd.operator.image.repository }}:{{ .Values.etcd.operator.image.tag }}"
         imagePullPolicy: {{ .Values.etcd.operator.image.pullPolicy }}
         name: cilium-etcd-operator

@@ -85,14 +85,15 @@ spec:
             command:
             - cilium
             - status
+            - --brief
           failureThreshold: 10
           # The initial delay for the liveness probe is intentionally large to
           # avoid an endless kill & restart cycle if in the event that the initial
           # bootstrapping takes longer than expected.
           initialDelaySeconds: 120
-          periodSeconds: 10
+          periodSeconds: 30
           successThreshold: 1
-          timeoutSeconds: 1
+          timeoutSeconds: 5
         name: cilium-agent
       {{- if hasKey .Values.config "prometheus-serve-addr" }}
         ports:
@@ -106,19 +107,27 @@ spec:
             command:
             - cilium
             - status
+            - --brief
           failureThreshold: 3
           initialDelaySeconds: 5
-          periodSeconds: 5
+          periodSeconds: 30
           successThreshold: 1
-          timeoutSeconds: 1
+          timeoutSeconds: 5
         securityContext:
           capabilities:
             add:
             - NET_ADMIN
+            - SYS_MODULE
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+        - mountPath: /sbin/modprobe
+          name: sbin-modprobe
+          readOnly: true
         - mountPath: /var/run/cilium
           name: cilium-run
         - mountPath: /host/opt/cni/bin
@@ -170,6 +179,12 @@ spec:
               key: clean-cilium-bpf-state
               name: {{ template "cilium.fullname" . }}
               optional: true
+        - name: CILIUM_WAIT_BPF_MOUNT
+          valueFrom:
+            configMapKeyRef:
+              key: wait-bpf-mount
+              name: {{ template "cilium.fullname" . }}
+              optional: true
         image: "{{ .Values.agent.init_image.repository }}:{{ .Values.agent.init_image.tag }}"
         imagePullPolicy: {{ .Values.agent.init_image.pullPolicy }}
         name: clean-cilium-state
@@ -177,10 +192,17 @@ spec:
           capabilities:
             add:
             - NET_ADMIN
+            - SYS_MODULE
           privileged: true
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
+        - mountPath: /lib/modules
+          name: lib-modules
+          readOnly: true
+        - mountPath: /sbin/modprobe
+          name: sbin-modprobe
+          readOnly: true
         - mountPath: /var/run/cilium
           name: cilium-run
       restartPolicy: Always
@@ -202,28 +224,31 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      # To keep state between restarts / upgrades
-      - hostPath:
+      - hostPath:  # To keep state between restarts / upgrades
           path: /var/run/cilium
           type: DirectoryOrCreate
         name: cilium-run
-      # To keep state between restarts / upgrades for bpf maps
-      - hostPath:
+      - hostPath:  # To keep state between restarts / upgrades for bpf maps
           path: /sys/fs/bpf
           type: DirectoryOrCreate
         name: bpf-maps
-      # To install cilium cni plugin in the host
-      - hostPath:
+      - hostPath:  # To be able to load kernel modules
+          path: /lib/modules
+          type: Directory
+        name: lib-modules
+      - hostPath:  # To be able to load ip[6]tables kernel modules
+          path: /sbin/modprobe
+          type: File
+        name: sbin-modprobe
+      - hostPath:  # To install cilium cni plugin in the host
           path: /opt/cni/bin
           type: DirectoryOrCreate
         name: cni-path
-      # To install cilium cni configuration in the host
-      - hostPath:
+      - hostPath:  # To install cilium cni configuration in the host
           path: /etc/cni/net.d
           type: DirectoryOrCreate
         name: etc-cni-netd
-      # To read the configuration from the config map
-      - configMap:
+      - configMap:  # To read the configuration from the config map
           items:
           - key: etcd
             path: etcd.yml

@@ -59,7 +59,7 @@ etcd:
     image:
       registry: docker.io
       repository: cilium/cilium-etcd-operator
-      tag: v2.0.5
+      tag: v2.0.6
       pullPolicy: IfNotPresent
 
     dnsPolicy: ClusterFirstWithHostNet
@@ -82,7 +82,7 @@ agent:
   init_image:
     registry: docker.io
     repository: cilium/cilium-init
-    tag: 2018-10-16
+    tag: 2019-04-05
     pullPolicy: IfNotPresent
 
   dnsPolicy: ClusterFirstWithHostNet
@@ -116,6 +116,9 @@ agent:
   # connections via a service may be loadbalanced to a different
   # backend after restart.
   clean-cilium-bpf-state: False
+
+  # wait-bpf-mount makes init container wait until bpf filesystem is mounted
+  wait-bpf-mount: False
 
 
 config:
