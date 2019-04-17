@@ -44,9 +44,6 @@ spec:
       containers:
       - args:
         - --debug=$(CILIUM_DEBUG)
-        - --kvstore=etcd
-        - --kvstore-opt=etcd.config=/etc/cilium/etcd.yml
-        - --container-runtime={{ .Values.agent.runtime }}
         - --config=/etc/cilium/config.yml
         command:
         - cilium-agent

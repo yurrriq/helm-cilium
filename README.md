@@ -4,6 +4,10 @@
 
 * BPF filesystem mounted & kicking ass
 
+## TODO
+* properly deal with runtime path(s) 
+* consul?
+
 
 ## Features
 

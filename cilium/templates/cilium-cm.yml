@@ -11,6 +11,7 @@ metadata:
 data:
   clean-cilium-state: '{{ index .Values.agent "clean-cilium-state" }}'
   clean-cilium-bpf-state: '{{ index .Values.agent "clean-cilium-bpf-state" }}'
+  wait-bpf-mount: '{{ index .Values.agent "wait-bpf-mount" }}'
   debug: '{{ .Values.config.debug }}'
   etcd: |-
     # This etcd-config contains the etcd endpoints of your cluster. If you use TLS
@@ -33,4 +34,14 @@ data:
     key-file: /etc/pki/etcd/etcd-client.key
     cert-file: /etc/pki/etcd/etcd-client.crt
   cilium: |-
+    kvstore: etcd
+    kvstore-opt:
+      etcd.config: /etc/cilium/etcd.yml
+    #  etcd.qps     Rate limit in kv store operations per second
+    container-runtime: {{ .Values.agent.runtime }}
+  {{- if .Values.agent.ipsec.enable }}
+    enable-ipsec: true
+    ipsec-key-file: /etc/pki/ipsec/keys
+  {{- end }}
+    # Config
 {{ toYaml .Values.config | indent 4 }}
