@@ -1,7 +1,7 @@
 include lib.mk
 
 HELM_DIR := cilium
-KUBE_VERSIONS := 1.8 1.9 1.10 1.11 1.12 1.13 1.14
+KUBE_VERSIONS := 1.11 1.12 1.13 1.14
 
 .PHONY: examples
 
