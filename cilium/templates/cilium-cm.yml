@@ -39,6 +39,13 @@ data:
       etcd.config: /etc/cilium/etcd.yml
     #  etcd.qps     Rate limit in kv store operations per second
     container-runtime: {{ .Values.agent.runtime }}
+  {{- if eq .Values.agent.runtime "docker" }}
+    container-runtime-endpoint: /var/run/docker.sock
+  {{- else if eq .Values.agent.runtime "containerd" }}
+    container-runtime-endpoint: /var/run/containerd/containerd.sock
+  {{- else if eq .Values.agent.runtime "crio" }}
+    container-runtime-endpoint: /var/run/crio/crio.sock
+  {{- end }}
   {{- if .Values.agent.ipsec.enable }}
     enable-ipsec: true
     ipsec-key-file: /etc/pki/ipsec/keys

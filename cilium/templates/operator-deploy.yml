@@ -39,12 +39,11 @@ spec:
     {{- end }}
     spec:
       containers:
-      - args:
-        - --debug=$(CILIUM_DEBUG)
-        - --kvstore=etcd
-        - --kvstore-opt=etcd.config=/etc/etcd.yml
-        command:
+      - command:
         - cilium-operator
+        args:
+        - --debug=$(CILIUM_DEBUG)
+        - --config=/etc/cilium/config.yml
         env:
       {{- with .Values.operator.env }}
 {{ toYaml . | indent 8 }}
@@ -63,24 +62,6 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: debug
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_CLUSTER_NAME
-          valueFrom:
-            configMapKeyRef:
-              key: cluster-name
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_CLUSTER_ID
-          valueFrom:
-            configMapKeyRef:
-              key: cluster-id
-              name: {{ template "cilium.fullname" . }}
-              optional: true
-        - name: CILIUM_DISABLE_ENDPOINT_CRD
-          valueFrom:
-            configMapKeyRef:
-              key: disable-endpoint-crd
               name: {{ template "cilium.fullname" . }}
               optional: true
         - name: AWS_ACCESS_KEY_ID
@@ -105,9 +86,8 @@ spec:
         imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
         name: cilium-operator
         volumeMounts:
-        - mountPath: /etc/etcd.yml
-          subPath: etcd.yml
-          name: etcd-config
+        - mountPath: /etc/cilium
+          name: cilium-config
           readOnly: true
         - mountPath: /etc/pki/etcd
           name: etcd-secrets
@@ -132,22 +112,22 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      # To read the etcd config stored in config maps
-      - configMap:
-          defaultMode: 420
-          items:
-          - key: etcd-config
-            path: etcd.yml
+      - name: cilium-config  # To read the configuration from the config map
+        configMap:
           name: {{ template "cilium.fullname" . }}
-        name: etcd-config
-        # To read the k8s etcd secrets in case the user might want to use TLS
-      - name: etcd-secrets
+          items:
+          - key: etcd
+            path: etcd.yml
+          - key: cilium
+            path: config.yml
+          defaultMode: 420
+      - name: etcd-secrets  # To read the k8s etcd secrets in case the user might want to use TLS
     {{- if hasKey .Values.etcd "secretVolume" }}
 {{ toYaml .Values.etcd.secretVolume | indent 8 }}
     {{- else  }}
         secret:
+          secretName: {{ .Values.etcd.secretName | default (printf "%s-etcd" (include "cilium.fullname" .)) }}
           defaultMode: 420
           optional: true
-          secretName: {{ .Values.etcd.secretName | default (printf "%s-etcd" (include "cilium.fullname" .)) }}
     {{- end }}
 {{- end -}}
