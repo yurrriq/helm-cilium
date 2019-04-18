@@ -43,7 +43,8 @@ spec:
         - cilium-operator
         args:
         - --debug=$(CILIUM_DEBUG)
-        - --config=/etc/cilium/config.yml
+        - --kvstore=$(CILIUM_KVSTORE)
+        - --kvstore-opt=$(CILIUM_KVSTORE_OPT)
         env:
       {{- with .Values.operator.env }}
 {{ toYaml . | indent 8 }}
@@ -61,31 +62,59 @@ spec:
         - name: CILIUM_DEBUG
           valueFrom:
             configMapKeyRef:
-              key: debug
+              key: debug-operator
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_CLUSTER_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: cluster-name
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_CLUSTER_ID
+          valueFrom:
+            configMapKeyRef:
+              key: cluster-id
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_KVSTORE
+          valueFrom:
+            configMapKeyRef:
+              key: kvstore
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_KVSTORE_OPT
+          valueFrom:
+            configMapKeyRef:
+              key: kvstore-opt
               name: {{ template "cilium.fullname" . }}
               optional: true
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
               key: AWS_ACCESS_KEY_ID
-              name: cilium-aws
+              name: {{ template "cilium.fullname" . }}-aws
               optional: true
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               key: AWS_SECRET_ACCESS_KEY
-              name: cilium-aws
+              name: {{ template "cilium.fullname" . }}-aws
               optional: true
         - name: AWS_DEFAULT_REGION
           valueFrom:
             secretKeyRef:
               key: AWS_DEFAULT_REGION
-              name: cilium-aws
+              name: {{ template "cilium.fullname" . }}-aws
               optional: true
         image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
         imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
         name: cilium-operator
         volumeMounts:
+        - mountPath: /root/cilium-operator.yaml  # TODO: Lean main.go to use --config
+          name: cilium-config
+          subPath: config-operator.yml
+          readOnly: true
         - mountPath: /etc/cilium
           name: cilium-config
           readOnly: true
@@ -118,8 +147,8 @@ spec:
           items:
           - key: etcd
             path: etcd.yml
-          - key: cilium
-            path: config.yml
+          - key: operator  # TODO: Useless as long as main.go doesnt listen to --config
+            path: config-operator.yml
           defaultMode: 420
       - name: etcd-secrets  # To read the k8s etcd secrets in case the user might want to use TLS
     {{- if hasKey .Values.etcd "secretVolume" }}

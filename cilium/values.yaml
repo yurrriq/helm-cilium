@@ -44,6 +44,14 @@ operator:
   env: []
   # - name: IMATEAPOT
   #   value: 42
+  config:
+    debug: false  # Enable debugging mode
+    #api-server-port: 9234               # Port on which the operator should serve API requests (default 9234)
+    #cilium-endpoint-gc: true            # Enable CiliumEndpoint garbage collector (default true)
+    #identity-gc-interval: 10m0s         # GC interval for security identities (default 10m0s)
+    #synchronize-k8s-services: true      # Synchronize Kubernetes services to kvstore (default true)
+    #unmanaged-pod-watcher-interval: 15  # Interval to check for unmanaged kube-dns pods (0 to disable) (default 15)
+    #disable-endpoint-crd: false         # If you want to disable endpoint CRD generation, enable this
 
 
 etcd:
@@ -244,11 +252,13 @@ config:
 
   #tofqdns-pre-cache:
 
+  # Enable legacy services (prior v1.5) to prevent from terminating existing
+  # connections with services when upgrading Cilium from < v1.5 to v1.5.
+  enable-legacy-services: false
+
+
   #datapath-mode:
   #ipvlan-master-device:
   #install-iptables-rules:
   #masquerade:
   #auto-direct-node-routes:
-
-  # Operator
-  # disable-endpoint-crd: false    # If you want to disable endpoint CRD generation, enable this

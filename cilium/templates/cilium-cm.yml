@@ -12,7 +12,13 @@ data:
   clean-cilium-state: '{{ index .Values.agent "clean-cilium-state" }}'
   clean-cilium-bpf-state: '{{ index .Values.agent "clean-cilium-bpf-state" }}'
   wait-bpf-mount: '{{ index .Values.agent "wait-bpf-mount" }}'
+
   debug: '{{ .Values.config.debug }}'
+  cluster-id: '{{ index .Values.config "cluster-id" }}'
+  cluster-name: '{{ index .Values.config "cluster-name" }}'
+  kvstore: etcd
+  kvstore-opt: etcd.config=/etc/cilium/etcd.yml  # etcd.qps  Rate limit in kv store operations per second
+
   etcd: |-
     # This etcd-config contains the etcd endpoints of your cluster. If you use TLS
     # please make sure you follow the tutorial in https://cilium.link/etcd-config
@@ -33,11 +39,8 @@ data:
     # https://cilium.link/etcd-config
     key-file: /etc/pki/etcd/etcd-client.key
     cert-file: /etc/pki/etcd/etcd-client.crt
+
   cilium: |-
-    kvstore: etcd
-    kvstore-opt:
-      etcd.config: /etc/cilium/etcd.yml
-    #  etcd.qps     Rate limit in kv store operations per second
     container-runtime: {{ .Values.agent.runtime }}
   {{- if eq .Values.agent.runtime "docker" }}
     container-runtime-endpoint: /var/run/docker.sock
@@ -51,4 +54,10 @@ data:
     ipsec-key-file: /etc/pki/ipsec/keys
   {{- end }}
     # Config
-{{ toYaml .Values.config | indent 4 }}
+{{ toYaml (omit .Values.config "debug" "cluster-id" "cluster-name") | indent 4 }}
+{{- if .Values.operator.enable }}
+  debug-operator: '{{ .Values.operator.config.debug }}'
+  operator: |-
+    # Config
+{{ toYaml (omit .Values.operator.config "debug") | indent 4 }}
+{{- end }}

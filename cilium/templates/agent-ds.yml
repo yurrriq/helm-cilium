@@ -50,6 +50,8 @@ spec:
         - cilium-agent
         args:
         - --debug=$(CILIUM_DEBUG)
+        - --kvstore=$(CILIUM_KVSTORE)
+        - --kvstore-opt=$(CILIUM_KVSTORE_OPT)
         - --config=/etc/cilium/config.yml
         env:
       {{- with .Values.agent.env }}
@@ -70,6 +72,30 @@ spec:
             configMapKeyRef:
               key: debug
               name: {{ template "cilium.fullname" . }}
+        - name: CILIUM_CLUSTER_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: cluster-name
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_CLUSTER_ID
+          valueFrom:
+            configMapKeyRef:
+              key: cluster-id
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_KVSTORE
+          valueFrom:
+            configMapKeyRef:
+              key: kvstore
+              name: {{ template "cilium.fullname" . }}
+              optional: true
+        - name: CILIUM_KVSTORE_OPT
+          valueFrom:
+            configMapKeyRef:
+              key: kvstore-opt
+              name: {{ template "cilium.fullname" . }}
+              optional: true
         image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
         imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
         lifecycle:
