@@ -116,6 +116,7 @@ agent:
   # prior Cilium run, so they may receive new IP addresses upon
   # restart. This also triggers clean-cilium-bpf-state.
   clean-cilium-state: false
+
   # If you want to clean cilium BPF state, set this to true;
   # Removes all BPF maps from the filesystem. Upon restart,
   # endpoints are restored with the same IP addresses, however
@@ -128,7 +129,9 @@ agent:
   # wait-bpf-mount makes init container wait until bpf filesystem is mounted
   wait-bpf-mount: false
 
-
+# For config see
+#   https://github.com/cilium/cilium/blob/master/pkg/option/config.go
+#   https://github.com/cilium/cilium/blob/master/Documentation/cmdref/cilium-agent.md
 config:
   debug: false  # If you want to run cilium in debug mode change this value to true
 
