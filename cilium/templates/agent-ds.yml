@@ -160,6 +160,8 @@ spec:
           readOnly: true
         - mountPath: /var/run/cilium
           name: cilium-run
+        - mountPath: /var/run
+          name: cilium-var-run
         - mountPath: /var/lib/cilium
           name: cilium-lib
         - mountPath: /host/opt/cni/bin
@@ -238,6 +240,8 @@ spec:
           readOnly: true
         - mountPath: /var/run/cilium
           name: cilium-run
+        - mountPath: /var/run
+          name: cilium-var-run
         - mountPath: /var/lib/cilium
           name: cilium-lib
       restartPolicy: Always
@@ -263,8 +267,11 @@ spec:
         hostPath:
           path: /var/run/cilium
           type: DirectoryOrCreate
-      - name: cilium-lib  # To keep state between restarts / upgrades
+      - name: cilium-lib  # Cilium does bpf & clustermesh magic here
         emptyDir: {}
+      - name: cilium-var-run  # netns is created here
+        emptyDir:
+          medium: Memory
       - name: bpf-maps  # To keep state between restarts / upgrades for bpf maps
         hostPath:
           path: /sys/fs/bpf
