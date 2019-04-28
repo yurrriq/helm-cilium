@@ -89,13 +89,15 @@ spec:
             configMapKeyRef:
               key: kvstore
               name: {{ template "cilium.fullname" . }}
-              optional: true
         - name: CILIUM_KVSTORE_OPT
           valueFrom:
             configMapKeyRef:
               key: kvstore-opt
               name: {{ template "cilium.fullname" . }}
-              optional: true
+        - name: GOPS_CONFIG_DIR  # To make gops not write /root/.config
+          value: /var/run/cilium
+        - name: TMPDIR           # For bpf run_probes.sh
+          value: /var/run/cilium
         image: "{{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}"
         imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
         lifecycle:
@@ -141,6 +143,7 @@ spec:
           successThreshold: 1
           timeoutSeconds: 5
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             add:
             - NET_ADMIN
@@ -157,6 +160,8 @@ spec:
           readOnly: true
         - mountPath: /var/run/cilium
           name: cilium-run
+        - mountPath: /var/lib/cilium
+          name: cilium-lib
         - mountPath: /host/opt/cni/bin
           name: cni-path
         - mountPath: /host/etc/cni/net.d
@@ -216,6 +221,7 @@ spec:
         imagePullPolicy: {{ .Values.agent.init_image.pullPolicy }}
         name: clean-cilium-state
         securityContext:
+          readOnlyRootFilesystem: true
           capabilities:
             add:
             - NET_ADMIN
@@ -232,6 +238,8 @@ spec:
           readOnly: true
         - mountPath: /var/run/cilium
           name: cilium-run
+        - mountPath: /var/lib/cilium
+          name: cilium-lib
       restartPolicy: Always
     {{- if semverCompare "<= 1.8-0" .Capabilities.KubeVersion.GitVersion }}
       serviceAccount: {{ template "cilium.fullname" . }}
@@ -255,6 +263,8 @@ spec:
         hostPath:
           path: /var/run/cilium
           type: DirectoryOrCreate
+      - name: cilium-lib  # To keep state between restarts / upgrades
+        emptyDir: {}
       - name: bpf-maps  # To keep state between restarts / upgrades for bpf maps
         hostPath:
           path: /sys/fs/bpf

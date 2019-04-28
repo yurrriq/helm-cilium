@@ -35,8 +35,7 @@ spec:
     rule: 'RunAsAny'
   fsGroup:
     rule: 'RunAsAny'
-# tries to write to /root/.config...
-#  readOnlyRootFilesystem: true
+  readOnlyRootFilesystem: true
 
 ---
 kind: ClusterRole
