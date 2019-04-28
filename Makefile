@@ -61,5 +61,14 @@ versions:
 	cilium/values.yaml
 
 
+values:
+
+#| Parameter                                   | Description                                                                                                                                                                                                                                                                                               | Default |
+#|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+#| `dataStorage`                               | Amount of storage available for Atlantis' data directory (mostly used to check out git repositories).                                                                                                                                                                                                     | `5Gi`   |
+#| `aws.config`                                | Contents of a file to be mounted to `~/.aws/config`.                                                                                                                                                                                                                                                      | n/a     |
+#| `aws.credentials`                           | Contents of a file to be mounted to `~/.aws/credentials`.                                                                                                                                                                                                                                                 | n/a     |
+
+
 clean:
 	rm -rf generated/

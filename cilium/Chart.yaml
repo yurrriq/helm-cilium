@@ -8,7 +8,7 @@ description:
 icon: https://cilium.io/static/new-hero-scheme.01620ee9.svg
 sources:
 - https://github.com/cilium/cilium
-- https://gitlab.com/ors-it/oss/helm-cilium
+- https://gitlab.com/ors-it-oss/helm-cilium
 maintainers:
 - name: Ronald van Zantvoort
   email: the.loeki@gmail.com
